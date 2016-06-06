@@ -24,17 +24,17 @@ function logError(msg, ...args) {
 }
 
 
-function parseTimestamp(timestampStr) {
+function parseDumpTimestamp(timestampStr) {
   // return new Date(parseInt(timestampStr/1000));
   return Math.floor(parseInt(timestampStr/1000)); // timestamp integer in milliseconds
 }
 
-function parseBoolean(booleanStr) {
+function parseDumpBoolean(booleanStr) {
   return parseInt(booleanStr) && true || false;
 }
 
 
-function parseEntryLine(line) {
+function parseDumpEntryLine(line) {
   const parts = line.split(' ').map(part => part.trim()).filter(part => part.length);
   if (parts.length != 11) {
     logWarn(`incorrect number of parts for entry line: {$line}`);
@@ -46,12 +46,12 @@ function parseEntryLine(line) {
     bodySize: parseInt(parts[2]),
     status: parseInt(parts[3]),
     entityVersion: parseInt(parts[4]),
-    date: parseTimestamp(parts[5]),
-    expiry: parseTimestamp(parts[6]),
-    requestTime: parseTimestamp(parts[7]),
-    responseTime: parseTimestamp(parts[8]),
-    bodyPresent: parseBoolean(parts[9]),
-    headRequest: parseBoolean(parts[10])
+    date: parseDumpTimestamp(parts[5]),
+    expiry: parseDumpTimestamp(parts[6]),
+    requestTime: parseDumpTimestamp(parts[7]),
+    responseTime: parseDumpTimestamp(parts[8]),
+    bodyPresent: parseDumpBoolean(parts[9]),
+    headRequest: parseDumpBoolean(parts[10])
   };
 }
 
@@ -76,7 +76,7 @@ function dumpCacheStats() {
   const cacheEntries = dumpResult.stdout.split('\n')
     .map(line => line.trim())
     .filter(line => line.length)
-    .map(parseEntryLine)
+    .map(parseDumpEntryLine)
     .filter(entry => entry)
     ;
   logDebug('## cache entries:', JSON.stringify(cacheEntries, true, 2));
