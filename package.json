@@ -12,5 +12,8 @@
     "url": "ssh://sam@dev.sustainablesoftware.com.au:45613/home/sam/projects/00DRAFT/htcachemon.git"
   },
   "author": "Sam Stainsby",
-  "license": "TODO"
+  "license": "TODO",
+  "dependencies": {
+    "restify": "^4.1.0"
+  }
 }

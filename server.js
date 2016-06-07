@@ -2,7 +2,9 @@
 
 const config = require('./config');
 const pkgConfig = require('./package');
-const p = require('child_process');
+const spawnSync = require('child_process').spawnSync;
+var restify = require('restify');
+
 config.package = pkgConfig;
 
 const DUMP_LINE_PARTS_COUNT = 11;
@@ -75,22 +77,24 @@ function parseDumpEntryLine(line) {
 }
 
 
+const HTCACHECLEAN_SPAWN_OPTIONS = {
+    uid: config.uid,
+    timeout: config.dump.timeoutSeconds*1000,
+    encoding: config.dump.encoding
+};
+
+
 function fetchCacheStats() {
   
-  // sudo -u www-data /usr/bin/htcacheclean -p /var/cache/apacheCacheTest -A
-  const dumpResult = p.spawnSync(
-    '/usr/bin/htcacheclean',
+  const dumpResult = spawnSync(
+    config.cmd.htcacheclean,
     ['-p', config.cacheDir, '-A'],
-    {
-      uid: config.uid,
-      timeout: config.dump.timeoutSeconds*1000,
-      encoding: config.dump.encoding
-    }
+    HTCACHECLEAN_SPAWN_OPTIONS
   );
 
   if (dumpResult.status !== 0) {
-    console.log('dump failed: ', dumpResult.stderr);
-    return;
+    logError('dump failed: ', dumpResult.stderr);
+    return [];
   }
   const cacheEntries = dumpResult.stdout.split('\n')
     .map(line => line.trim())
@@ -98,12 +102,96 @@ function fetchCacheStats() {
     .map(parseDumpEntryLine)
     .filter(entry => entry)
     ;
-  logInfo(`found ${cacheEntries.length} cache entries`);
-  logDebug('## cache entries:', JSON.stringify(cacheEntries, true, 4));
+  // logDebug('cache entries:', JSON.stringify(cacheEntries, true, 4));
+
+  return cacheEntries;
+}
+
+
+let cacheStats = null;
+let cacheEntriesUntil = 0; // timestamp in millisecods to cache entries until
+
+
+function httpGetEntries(req, res, next) {
+
+  logDebug(`refresh cache if ${Date.now()} > ${cacheEntriesUntil}`);
+  if (Date.now() > cacheEntriesUntil) {
+    logDebug('fetching new stats');
+    const entries = fetchCacheStats();
+    if (entries === null) {
+      cacheStats = null;
+    } else {
+      logInfo(`found ${entries.length} cache entries`);
+      cacheStats = {};
+      for (const entry of entries) {
+        const url = entry.url;
+        delete(entry.url);
+        if (!cacheStats[url]) {
+          cacheStats[url] = [];
+        }
+        cacheStats[url].push(entry);
+      }
+    }
+    cacheEntriesUntil = Date.now() + config.stats.cacheTimeSeconds*1000;
+  } else {
+    logDebug('using cached stats');
+  }
+
+  if (cacheStats) {
+    res.send(cacheStats);
+    return next();
+  } else {
+    return next(new restify.ConflictError('entries are missing'));
+  }
+}
+
+
+function httpDeleteEntry(url, req, res, next) {
+
+  logInfo('deleting entries for URL: ', url);
+  const deleteResult = spawnSync(
+    config.cmd.htcacheclean,
+    ['-p', config.cacheDir, url],
+    HTCACHECLEAN_SPAWN_OPTIONS
+  );
+
+  cacheEntriesUntil = 0; // invalidate the cache
+
+  const status = deleteResult.status;
+  const failed = status !== 0 && status !== 2;
+  if (failed) {
+    logError('delete failed: ', deleteResult.stderr);
+    return next(new Error('delete failed'));
+  }
+
+  const deleted = status === 0;
+  logInfo(deleted ? 'deleted ok' : 'not deleted because entry did not exist');
+  res.send({deleted: deleted});
+  return next();
+}
+
+
+function startServer() {
+
+  var server = restify.createServer();
+
+  server.get('/entries', httpGetEntries);
+  server.del('/entries/:url', function(req, res, next) {
+    const url = decodeURIComponent(req.params.url);
+    return httpDeleteEntry(url, req, res, next);
+  });
+
+  server.on('uncaughtException', function(req, res, route, error) {
+    logError(error);
+  });
+  
+  server.listen(config.http.port, config.http.host, function() {
+    logInfo(`HTTP service listening at ${server.url}`);
+  });
 }
 
 
 logInfo('starting', config.package.name, 'version', config.package.version);
-fetchCacheStats();
+startServer();
 
 })();
