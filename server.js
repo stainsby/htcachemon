@@ -58,11 +58,6 @@ function parseDumpEntryLine(line) {
     urlParts.push(parts.shift());
   }
   const url = urlParts.join(' ');
-  // final check: URL must end in '?'
-  if (url[url.length - 1] !== '?') {
-    logWarn('incorrect URL parsed (' + url + ') .. skipping:',  line);
-    return null;
-  }
 
   return {
     url: url,
@@ -103,7 +98,7 @@ function fetchCacheStats() {
     .map(parseDumpEntryLine)
     .filter(entry => entry)
     ;
-  logInfo(`found ${cacheEntries.length} cache entries:`);
+  logInfo(`found ${cacheEntries.length} cache entries`);
   logDebug('## cache entries:', JSON.stringify(cacheEntries, true, 4));
 }
 
