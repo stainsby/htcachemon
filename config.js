@@ -4,5 +4,8 @@ module.exports = {
   dump: {
     timeoutSeconds: 20,
     encoding: 'utf-8'
-  } 
+  } ,
+  log: {
+    level: 'info'
+  }
 };

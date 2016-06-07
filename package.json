@@ -1,0 +1,16 @@
+{
+  "name": "htcachemon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://sam@dev.sustainablesoftware.com.au:45613/home/sam/projects/00DRAFT/htcachemon.git"
+  },
+  "author": "Sam Stainsby",
+  "license": "TODO"
+}
