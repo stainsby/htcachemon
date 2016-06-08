@@ -2,11 +2,12 @@
 
   'use strict';
 
-  var ngApp = angular.module('htcachemon', ['ngRoute', 'ngResource']);
+  var ngApp = angular.module('htcachemon', ['ngRoute', 'ngResource', 'ngAnimate']);
 
 
   ngApp.constant('moment', window.moment);
   ngApp.constant('filesize', window.filesize);
+  ngApp.constant('taffy', window.TAFFY);
 
 
   ngApp.factory('Entries', function($log, $resource, config) {
@@ -16,15 +17,19 @@
   });
 
 
-  ngApp.controller('MainController', function($log, $resource, $scope, moment, filesize, Entries) {
+  ngApp.controller('MainController', function($log, $resource, $scope, moment, filesize, status, Entries) {
     $scope.moment = moment;
     $scope.filesize = filesize;
-    $log.debug('$scope:', $scope);
+    $scope.loaded = false;
+    $scope.status = status;
     Entries.get(
       {},
       function success(entries) {
-        $log.debug('fetched entries:', entries);
+        $scope.loaded = true;
         $scope.entries = entries;
+        var urls = Object.keys(entries).length;
+        $log.debug('fetched cache entries OK, unpacking entries for', urls.length, 'URLs');
+        // $.each(urls, functiomn(idx, entries))
       },
       function failure(err) {
         $log.error('ERROR:', err);
