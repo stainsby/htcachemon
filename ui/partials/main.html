@@ -1,0 +1,19 @@
+<h2>Cache Entries</h2>
+
+<div class="row-fluid clearfix">
+  <div class="col-md-12">
+    <ul class="list-group" style="height: 40em; overflow-y: auto">
+      <li class="list-group-item" ng-repeat="(url, stats) in entries">
+        <p><a ng-href="{{url}}" target="_blank">{{url}}</a></p>
+        <p ng-repeat="stat in stats">
+          status: {{stat.status}}<br>
+          expiry: {{moment(stat.expiry).fromNow()}}<br>
+          size: {{filesize(stat.bodySize)}}<br>
+          version: {{stat.entityVersion}}<br>
+          request time: {{moment(stat.requestTime).format()}}<br>
+          response time: {{moment(stat.responseTime).format()}}<br>
+        </p>
+      </li>
+    </ul>
+  </div>
+</div>

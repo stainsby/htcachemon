@@ -32,7 +32,6 @@ function logError(msg, ...args) {
 
 
 function parseDumpTimestamp(timestampStr) {
-  // return new Date(parseInt(timestampStr/1000));
   return Math.floor(parseInt(timestampStr/1000)); // timestamp integer in milliseconds
 }
 
@@ -175,14 +174,22 @@ function startServer() {
 
   var server = restify.createServer();
 
+  server.use(
+    function crossOrigin(req,res,next){
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header("Access-Control-Allow-Headers", "X-Requested-With");
+      return next();
+    }
+  );
+
+  server.on('uncaughtException', function(req, res, route, error) {
+    logError(error);
+  });
+
   server.get('/entries', httpGetEntries);
   server.del('/entries/:url', function(req, res, next) {
     const url = decodeURIComponent(req.params.url);
     return httpDeleteEntry(url, req, res, next);
-  });
-
-  server.on('uncaughtException', function(req, res, route, error) {
-    logError(error);
   });
   
   server.listen(config.http.port, config.http.host, function() {
