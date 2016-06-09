@@ -30,53 +30,79 @@
 
     $scope.moment = moment;
     $scope.filesize = filesize;
-    $scope.loaded = false;
+    $scope.dataLoaded = false;
     $scope.status = status;
     $scope.urlFilter = '';
 
     function doDatabaseRefresh() {
-      $log.info('starting database refresh');
-      $log.info('fetching cache entry stats');
+      $log.info('starting database refresh ...');
+      $log.info('  - fetching cache entry stats');
+      $scope.dataLoaded = false;
       entries.get().$promise.then(function(entryMap) {
         delete entryMap.$promise;
         delete entryMap.$resolved;
-        $log.info('got entry stats for', Object.keys(entryMap).length, 'URLs');
-        $log.info('clearing the database');
+        $log.info('  - got entry stats for', Object.keys(entryMap).length, 'URLs');
+        $log.info('  - clearing the database');
         db().remove(true); // clear the database
-        $log.info('inserting new data into the database');
+        $log.info('  - populating the database');
         angular.forEach(entryMap, function(entries, url) {
           angular.forEach(entries, function(entry) {
             entry.url = url;
             db.insert(entry);
           });
         });
-        $log.info('database refresh done');
-        $scope.loaded = true;
+        $scope.dataLoaded = true;
+        $log.info('... database refresh done');
         doUrlFilter();
       });
     }
 
     function doUrlFilter() {
-      var filter = $scope.urlFilter.trim();
-      $log.info('applying URL filter:', filter);
-      $scope.loaded = false;
+
+      var filter = $scope.urlFilter || '';
+      $log.info('applying URL filter: \'' + filter + '\' ...');
+      $scope.resultsLoaded = false;
       var results = (filter ? db( { url: { like: filter } } ) : db()).order('url, expiry');
-      $log.info('found', results.count(), 'results');
+      $log.info('  - found', results.count(), 'results');
+
       var entries = [];
       var currentUrl;
       var currentEntrySet = [];
       var url;
+
+      function appendEntrySet(entrySet) {
+        if (entrySet.length) {
+          // find freshest entry
+          var freshestExpiry;
+          var freshestEntry;
+          angular.forEach(entrySet, function(entry) {
+            var expiry = entry.expiry;
+            if (freshestExpiry === undefined || expiry > freshest) {
+              freshestExpiry = expiry;
+              freshestEntry = entry;
+            }
+          });
+          var fresh = freshestEntry.expiry > Date.now();
+          entries.push({
+            url: currentUrl,
+            stats: entrySet,
+            freshest: freshestEntry,
+            fresh: fresh
+          });
+        }
+      }
       results.each(function(entry) {
         url = entry.url;
-        // delete entry.url;
         if (currentUrl !== undefined && url !== currentUrl) {
-          entries.push({ url: currentUrl, stats: currentEntrySet });
+          appendEntrySet(currentEntrySet);
           currentEntrySet = [];
         }
         currentUrl = url;
         currentEntrySet.push(entry);
       });
-      entries.push({ url: currentUrl, stats: currentEntrySet }); // don't forget the last set!
+      if (currentUrl !== undefined) {
+        appendEntrySet(currentEntrySet);
+      }
 
       var totalCount = entries.length;
       var entriesPerPage = $rootScope.search.entriesPerPage;
@@ -92,15 +118,16 @@
 
       onPagination();
 
-      $scope.loaded = true;
+      $log.info('... filtering done');
+      $scope.resultsLoaded = true;
 
     }
 
 
     function doPurgeUrl(url) {
-      $log.info('purging URL:', url);
+      $log.info('purging URL: \'' + url + '\' ...');
       entries.delete({url: url}).$promise.then(function() {
-        $log.info('purging URL OK:', url);
+        $log.info('... purged URL OK:', url);
       });
     }
 
@@ -156,7 +183,7 @@
 
 
   ngApp.run(function($rootScope, $log, config) {
-    $log.info('htcachemon running');
+    $log.info('htcachemon web UI running');
     $rootScope.search = {
       entriesPerPage: config.search.entriesPerPage
     };

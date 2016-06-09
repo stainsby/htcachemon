@@ -8,7 +8,7 @@
       endpoint: "http://127.0.0.1:6453"
     },
     search: {
-      entriesPerPage: 4
+      entriesPerPage: 10
     }
   };
 

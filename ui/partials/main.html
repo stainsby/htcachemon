@@ -1,33 +1,41 @@
-<div ng-hide="loaded" class="alert alert-info"><p>Fetching cache entries ...</p></div>
+<div ng-hide="dataLoaded" class="alert alert-info"><p>Fetching cache entries ... </p></div>
 
-<div ng-show="loaded" class="row-fluid clearfix" style="margin-bottom: 2em;">
-  <div class="col-md-12">
-    <div class="pull-right">
-      <a href="" class="btn btn-lg btn-info" ng-click="doDatabaseRefresh()"><i class="fa fa-refresh"></i>&nbsp;Refresh</a>
+<div ng-show="dataLoaded" class="row-fluid clearfix" style="margin-bottom: 2em;">
+  <div class="col-md-8">
+    <div class="row clearfix">
+      <form ng-submit="doUrlFilter()" class="XXXform-inline">
+        <div class="col-xs-8">
+          <input id="urlFilterInput" type="text" ng-model="urlFilter" class="form-control pull-right" placeholder="displayed URLs will contain the value entered here">
+        </div>
+        <div class="col-xs-4">
+          <a href="" ng-click="doUrlFilter()" class="btn btn-primary btn-sm"><i class="fa fa-search"></i></a>
+          <a href="" ng-click="urlFilter = ''; doUrlFilter()" class="btn btn-default btn-sm"><i class="fa fa-remove"></i></a>
+        </div>
+      </form>
     </div>
-    <form ng-submit="doUrlFilter()" class="form-horizontal">
-      <div class="form-group">
-        <div class="col-md-9">
-          <input id="urlFilterInput" type="text" ng-model="urlFilter" class="form-control" placeholder="displayed URLs will contain the value entered here">
-        </div>
-        <div class="col-md-1">
-          <a href="" ng-click="doUrlFilter()" class="btn btn-primary btn-sm">apply</a>
-        </div>
-      </div>
-    </form>
+  </div>
+  <div class="col-md-4">
+    <p class="pull-right">
+      <a href="" class="btn btn-lg btn-info" ng-click="doDatabaseRefresh()"><i class="fa fa-refresh"></i>&nbsp;refetch cache stats</a>
+    </p>
   </div>
 </div>
 
 
-<div ng-show="loaded" class="row-fluid clearfix">
+<div ng-show="dataLoaded && !resultsLoaded" class="alert alert-info"><p>Filtering ... </p></div>
+
+<div ng-show="dataLoaded && resultsLoaded" class="row-fluid clearfix">
   <div class="col-md-12">
 
-    <p>
+    <p ng-if="search.entries.length" class="alert alert-info">
       Showing entries for {{search.entryIndexStart + 1}} to {{search.entryIndexStart + search.pageEntryCount}}
-      of {{search.entries.length}} matching URLs:
+      of {{search.entries.length}} matching URLs.
+    </p>
+    <p ng-if="!search.entries.length" class="alert alert-warning">
+      No matching URLs found.
     </p>
 
-    <nav>
+    <nav ng-if="search.entries.length">
       <ul class="pager">
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === 1" ng-click="pageBackward()">«</button></li>
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === search.lastPage" ng-click="pageForward()">»</button></li>
@@ -37,28 +45,33 @@
     <ul class="list-group">
       <li class="list-group-item" ng-repeat="urlEntry in urlEntries">
         <button class="pull-right btn btn-sm btn-warning" ng-click="doPurgeUrl(urlEntry.url)">
-          <i class="fa fa-trash"></i>&nbsp;purge URL
+          <i class="fa fa-trash"></i>&nbsp;purge
         </button>
         <p>
           <a ng-href="{{urlEntry.url}}" target="_blank">{{urlEntry.url}}</a>
-          {{urlEntry.stats.length}} entr{{urlEntry.stats.length > 1 && 'ies' || 'y'}}
-          <a ng-click="entryShowState[$index] = !entryShowState[$index]" href="">
-            <i class="fa" ng-class="entryShowState[$index] && 'fa-chevron-down' || 'fa-chevron-right'"></i>
+          <a ng-click="entryShowState[$index] = !entryShowState[$index]" href="" class="btn btn-sm btn-default btn-link">
+            {{entryShowState[$index] && 'hide' || 'show'}} {{urlEntry.stats.length}} entr{{urlEntry.stats.length > 1 && 'ies' || 'y'}}
+            &nbsp;<i class="fa" ng-class="entryShowState[$index] && 'fa-chevron-down' || 'fa-chevron-right'"></i>
           </a>
+          <span ng-if="urlEntry.fresh"><span class="label label-success">fresh</span> expires in</span>
+          <span ng-if="!urlEntry.fresh"><span class="label label-warning">stale</span> expired</span>
+          {{moment(urlEntry.freshest.expiry).fromNow()}}
         </p>
         <div ng-if="entryShowState[$index]" class="ng-fade">
           <p ng-repeat="stat in urlEntry.stats">
-            <strong>{{stat.status}} {{status[stat.status]}}, {{moment(stat.requestTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}}</strong><br>
-            expires: {{moment(stat.expiry).format('DD MMM YYYY, HH:mm:ss')}} ({{moment(stat.expiry).fromNow()}})<br>
+            <strong>{{stat.status}} {{status[stat.status]}} -
+              entry requested {{moment(stat.requestTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}} ({{moment(stat.requestTime).fromNow()}})
+            </strong><br>
+            expiry: {{moment(stat.expiry).format('DD MMM YYYY, HH:mm:ss')}} ({{moment(stat.expiry).fromNow()}})<br>
             size: {{filesize(stat.bodySize)}}<br>
-            version: {{stat.entityVersion}}<br>
-            responded: {{moment(stat.responseTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}}<br>
+            responded: {{moment(stat.responseTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}} ({{moment(stat.responseTime).fromNow()}})<br>
+            entity version: {{stat.entityVersion}}<br>
           </p>
         </div>
       </li>
     </ul>
 
-    <nav>
+    <nav ng-if="search.entries.length">
       <ul class="pager">
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === 1" ng-click="pageBackward()">«</button></li>
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === search.lastPage" ng-click="pageForward()">»</button></li>
