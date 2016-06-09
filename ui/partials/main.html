@@ -3,7 +3,7 @@
 <div ng-show="loaded" class="row-fluid clearfix" style="margin-bottom: 2em;">
   <div class="col-md-12">
     <div class="pull-right">
-      <a href="" class="btn btn-lg btn-info" ng-click="doDatabaseRefresh()"><i class="fa fa-refresh"></i>&nbsp;Refresh All</a>
+      <a href="" class="btn btn-lg btn-info" ng-click="doDatabaseRefresh()"><i class="fa fa-refresh"></i>&nbsp;Refresh</a>
     </div>
     <form ng-submit="doUrlFilter()" class="form-horizontal">
       <div class="form-group">
@@ -36,7 +36,9 @@
 
     <ul class="list-group">
       <li class="list-group-item" ng-repeat="urlEntry in urlEntries">
-        <button class="pull-right btn btn-sm btn-warning"><i class="fa fa-trash"></i>&nbsp;purge URL</button>
+        <button class="pull-right btn btn-sm btn-warning" ng-click="doPurgeUrl(urlEntry.url)">
+          <i class="fa fa-trash"></i>&nbsp;purge URL
+        </button>
         <p>
           <a ng-href="{{urlEntry.url}}" target="_blank">{{urlEntry.url}}</a>
           {{urlEntry.stats.length}} entr{{urlEntry.stats.length > 1 && 'ies' || 'y'}}

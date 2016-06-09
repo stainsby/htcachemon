@@ -174,20 +174,29 @@ function startServer() {
 
   var server = restify.createServer();
 
-  server.use(
-    function crossOrigin(req,res,next){
-      res.header("Access-Control-Allow-Origin", "*");
-      res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  server.pre(
+    function(req, res, next){
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS, DELETE");
       return next();
     }
   );
 
+
+  server.pre(restify.CORS());
+  server.use(restify.fullResponse());
+
   server.on('uncaughtException', function(req, res, route, error) {
     logError(error);
   });
-
+  
+  server.opts('/entries', function(req, res, next) {
+    res.send();
+    return next();
+  });
   server.get('/entries', httpGetEntries);
   server.del('/entries/:url', function(req, res, next) {
+    res.setHeader("Access-Control-Allow-Methods", "DELETE");
     const url = decodeURIComponent(req.params.url);
     return httpDeleteEntry(url, req, res, next);
   });
@@ -195,6 +204,7 @@ function startServer() {
   server.listen(config.http.port, config.http.host, function() {
     logInfo(`HTTP service listening at ${server.url}`);
   });
+
 }
 
 

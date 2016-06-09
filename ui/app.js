@@ -11,14 +11,15 @@
 
 
   ngApp.factory('entries', function($log, $resource, config) {
-    var entryPath = config.api.endpoint + '/entries';
+    var entryPath = config.api.endpoint + '/entries/:url';
     $log.info('API entry path', entryPath);
     return $resource(
       entryPath,
+      {},
       {
         actions: {
-          get: {method:'GET', isArray: false},
-          delete: {method:'DELETE'},
+          get: {method: 'GET', isArray: false},
+          delete: {method: 'DELETE'},
         }
       }
     );
@@ -88,14 +89,19 @@
       $rootScope.search.totalCount = totalCount;
       $rootScope.search.page = page;
       $rootScope.search.lastPage = lastPage;
-      // $rootScope.search.entryIndexStart = entryIndexStart;
-      // $rootScope.search.pageEntryCount = pageEntryCount;
-      // $scope.urlEntries = $rootScope.search.entries.slice(entryIndexStart, entryIndexStart + pageEntryCount);
 
       onPagination();
 
       $scope.loaded = true;
 
+    }
+
+
+    function doPurgeUrl(url) {
+      $log.info('purging URL:', url);
+      entries.delete({url: url}).$promise.then(function() {
+        $log.info('purging URL OK:', url);
+      });
     }
 
 
@@ -127,6 +133,7 @@
 
     $scope.doDatabaseRefresh = doDatabaseRefresh;
     $scope.doUrlFilter = doUrlFilter;
+    $scope.doPurgeUrl = doPurgeUrl;
     $scope.pageForward = pageForward;
     $scope.pageBackward = pageBackward;
     
