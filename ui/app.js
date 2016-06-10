@@ -80,7 +80,7 @@
           angular.forEach(entrySet, function(entry) {
             purged = purged || entry.purged;
             var expiry = entry.expiry;
-            if (freshestExpiry === undefined || expiry > freshest) {
+            if (freshestExpiry === undefined || expiry > freshestExpiry) {
               freshestExpiry = expiry;
               freshestEntry = entry;
             }
