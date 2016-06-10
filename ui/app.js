@@ -203,7 +203,7 @@
   function($routeProvider) {
     $routeProvider.
       when('/main', {
-        templateUrl: 'partials/main.html',
+        templateUrl: 'main.html',
         controller: 'MainController'
       }).
       otherwise({
