@@ -27,11 +27,11 @@
 <div ng-show="dataLoaded && resultsLoaded" class="row-fluid clearfix">
   <div class="col-md-12">
 
-    <p ng-if="search.entries.length" class="alert alert-info">
+    <p ng-if="search.entries.length" class="alert alert-info lead">
       Showing entries for {{search.entryIndexStart + 1}} to {{search.entryIndexStart + search.pageEntryCount}}
       of {{search.entries.length}} matching URLs.
     </p>
-    <p ng-if="!search.entries.length" class="alert alert-warning">
+    <p ng-if="!search.entries.length" class="alert alert-warning lead">
       No matching URLs found.
     </p>
 
@@ -39,35 +39,53 @@
       <ul class="pager">
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === 1" ng-click="pageBackward()">«</button></li>
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === search.lastPage" ng-click="pageForward()">»</button></li>
+        <li class="form-inline">
+          <small>&nbsp;&nbsp;
+          <select class="form-control input-sm" ng-change="setEntriesPerPage()" ng-model="search.entriesPerPageStr">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+          </select>
+          URLs per page</small>
+        </li>
       </ul>
     </nav>
 
     <ul class="list-group">
       <li class="list-group-item" ng-repeat="urlEntry in urlEntries">
-        <button class="pull-right btn btn-sm btn-warning" ng-click="doPurgeUrl(urlEntry.url)">
-          <i class="fa fa-trash"></i>&nbsp;purge
-        </button>
-        <p>
-          <a ng-href="{{urlEntry.url}}" target="_blank">{{urlEntry.url}}</a>
-          <a ng-click="entryShowState[$index] = !entryShowState[$index]" href="" class="btn btn-sm btn-default btn-link">
-            {{entryShowState[$index] && 'hide' || 'show'}} {{urlEntry.stats.length}} entr{{urlEntry.stats.length > 1 && 'ies' || 'y'}}
-            &nbsp;<i class="fa" ng-class="entryShowState[$index] && 'fa-chevron-down' || 'fa-chevron-right'"></i>
-          </a>
-          <span ng-if="urlEntry.fresh"><span class="label label-success">fresh</span> expires in</span>
-          <span ng-if="!urlEntry.fresh"><span class="label label-warning">stale</span> expired</span>
-          {{moment(urlEntry.freshest.expiry).fromNow()}}
-        </p>
-        <div ng-if="entryShowState[$index]" class="ng-fade">
-          <p ng-repeat="stat in urlEntry.stats">
-            <strong>{{stat.status}} {{status[stat.status]}} -
-              entry requested {{moment(stat.requestTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}} ({{moment(stat.requestTime).fromNow()}})
-            </strong><br>
-            expiry: {{moment(stat.expiry).format('DD MMM YYYY, HH:mm:ss')}} ({{moment(stat.expiry).fromNow()}})<br>
-            size: {{filesize(stat.bodySize)}}<br>
-            responded: {{moment(stat.responseTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}} ({{moment(stat.responseTime).fromNow()}})<br>
-            entity version: {{stat.entityVersion}}<br>
+        <div ng-if="urlEntry.purged">
+          <p>
+            <de><a ng-href="{{urlEntry.url}}" target="_blank" ng-class="{del: urlEntry.purged}">{{urlEntry.url}}</a></del>
+            &nbsp;&nbsp;<span class="label label-danger">purged</span>
           </p>
         </div>
+        <div ng-if="!urlEntry.purged">
+          <button class="pull-right btn btn-sm btn-warning" ng-click="doPurgeUrl(urlEntry)">
+            <i class="fa fa-trash"></i>&nbsp;purge
+          </button>
+          <p>
+            <a ng-href="{{urlEntry.url}}" target="_blank" ng-class="{del: urlEntry.purged}">{{urlEntry.url}}</a>
+            <a ng-click="entryShowState[$index] = !entryShowState[$index]" href="" class="btn btn-sm btn-default btn-link">
+              {{entryShowState[$index] && 'hide' || 'show'}} {{urlEntry.stats.length}} entr{{urlEntry.stats.length > 1 && 'ies' || 'y'}}
+              &nbsp;<i class="fa" ng-class="entryShowState[$index] && 'fa-chevron-down' || 'fa-chevron-right'"></i>
+            </a>
+            <span ng-if="urlEntry.fresh"><span class="label label-success">fresh</span> expires in</span>
+            <span ng-if="!urlEntry.fresh"><span class="label label-warning">stale</span> expired</span>
+            {{moment(urlEntry.freshest.expiry).fromNow()}}
+          </p>
+          <div ng-if="entryShowState[$index]" class="ng-fade">
+            <p ng-repeat="stat in urlEntry.stats">
+              <strong>{{stat.status}} {{status[stat.status]}} -
+                entry requested {{moment(stat.requestTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}} ({{moment(stat.requestTime).fromNow()}})
+              </strong><br>
+              expiry: {{moment(stat.expiry).format('DD MMM YYYY, HH:mm:ss')}} ({{moment(stat.expiry).fromNow()}})<br>
+              size: {{filesize(stat.bodySize)}}<br>
+              responded: {{moment(stat.responseTime).format('DD MMM YYYY, HH:mm:ss.SSS[s]')}} ({{moment(stat.responseTime).fromNow()}})<br>
+              entity version: {{stat.entityVersion}}<br>
+            </p>
+          </div>
+        </div> <!-- not purged -->
       </li>
     </ul>
 
@@ -77,5 +95,13 @@
         <li><button class="btn btn-default btn-sm" href="" ng-disabled="search.page === search.lastPage" ng-click="pageForward()">»</button></li>
       </ul>
     </nav>
+  </div>
+</div>
+
+<div ng-if="credits" class="row-fluid clearfix">
+  <div class="col-md-12 well">
+    <p class="pull-right">
+      <large>htcachemon software by <a target="_blank" ng-href="credits.author.url">{{credits.author.name}}</a></large>
+    </p>
   </div>
 </div>

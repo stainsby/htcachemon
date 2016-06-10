@@ -9,6 +9,12 @@
     },
     search: {
       entriesPerPage: 10
+    },
+    credits: {
+      author: {
+        name: 'Sustainable Software Pty Ltd',
+        url: 'http://www.sustainablesoftware.com.au/'
+      }
     }
   };
 

@@ -33,6 +33,7 @@
     $scope.dataLoaded = false;
     $scope.status = status;
     $scope.urlFilter = '';
+    $scope.credits = config.credits;
 
     function doDatabaseRefresh() {
       $log.info('starting database refresh ...');
@@ -75,7 +76,9 @@
           // find freshest entry
           var freshestExpiry;
           var freshestEntry;
+          var purged;
           angular.forEach(entrySet, function(entry) {
+            purged = purged || entry.purged;
             var expiry = entry.expiry;
             if (freshestExpiry === undefined || expiry > freshest) {
               freshestExpiry = expiry;
@@ -83,12 +86,15 @@
             }
           });
           var fresh = freshestEntry.expiry > Date.now();
-          entries.push({
+          var newSet = {
             url: currentUrl,
             stats: entrySet,
             freshest: freshestEntry,
             fresh: fresh
-          });
+          };
+          if (!purged) {
+            entries.push(newSet);
+          }
         }
       }
       results.each(function(entry) {
@@ -124,9 +130,14 @@
     }
 
 
-    function doPurgeUrl(url) {
+    function doPurgeUrl(urlEntry) {
+      var url = urlEntry.url;
       $log.info('purging URL: \'' + url + '\' ...');
       entries.delete({url: url}).$promise.then(function() {
+        urlEntry.purged = true;
+        angular.forEach(urlEntry.stats, function(stat) {
+          stat.purged = true;
+        });
         $log.info('... purged URL OK:', url);
       });
     }
@@ -145,6 +156,15 @@
     }
 
 
+    function resetPagination() {
+      var totalCount = $rootScope.search.totalCount;
+      var entriesPerPage = $rootScope.search.entriesPerPage;
+      $rootScope.search.page = 1;
+      $rootScope.search.lastPage = Math.ceil(totalCount/entriesPerPage);
+      onPagination();
+    }
+
+
     function pageForward() {
       var page = $rootScope.search.page;
       var lastPage = $rootScope.search.lastPage;
@@ -158,12 +178,22 @@
       onPagination();
     }
 
+
+    function setEntriesPerPage() {
+      $rootScope.search.entriesPerPage = parseInt($rootScope.search.entriesPerPageStr);
+      resetPagination();
+    }
+
+
     $scope.doDatabaseRefresh = doDatabaseRefresh;
     $scope.doUrlFilter = doUrlFilter;
     $scope.doPurgeUrl = doPurgeUrl;
     $scope.pageForward = pageForward;
     $scope.pageBackward = pageBackward;
-    
+    $scope.setEntriesPerPage = setEntriesPerPage;
+    $rootScope.search.entriesPerPageStr = '' + $rootScope.search.entriesPerPage;
+
+
     doDatabaseRefresh();
 
   });
