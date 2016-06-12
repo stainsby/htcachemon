@@ -63,7 +63,7 @@
       var filter = $scope.urlFilter || '';
       $log.info('applying URL filter: \'' + filter + '\' ...');
       $scope.resultsLoaded = false;
-      var results = (filter ? db( { url: { like: filter } } ) : db()).order('url, expiry');
+      var results = (filter ? db( { url: { like: filter } } ) : db()).order('url, expiry desc');
       $log.info('  - found', results.count(), 'results');
 
       var entries = [];
