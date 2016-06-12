@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://sam@dev.sustainablesoftware.com.au:45613/home/sam/projects/00DRAFT/htcachemon.git"
+    "url": "git@github.com:stainsby/htcachemon.git"
   },
   "author": "Sam Stainsby",
   "license": "TODO",

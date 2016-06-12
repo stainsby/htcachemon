@@ -20,7 +20,8 @@ left as an exercise for the reader.
 You will need to have node.js and the Apache `htcacheclean` utility 
 installed and, of course, an Apache server and a `mod_cache_disk` cache.
 
-1. Clone the git repository at <git@github.com:stainsby/htcachemon.git>.
+1. Clone the git repository at
+[git@github.com:stainsby/htcachemon.git](git@github.com:stainsby/htcachemon.git).
 2. `cd` into your cloned repository and run `npm install` to install the NPM 
 packages that the server component depends on.
 3. Edit `<repo>/config.js` to suit your system. Common items to change will 
