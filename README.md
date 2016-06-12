@@ -36,3 +36,7 @@ single page application. All dependencies are provided (or come from CDNs).
 1. Adjust `<repo>/ui/config.js` to suit your system. You will
    likely need to change the API endpoint.
 2. Configure your web server to serve the files in `<repo>/ui`.
+
+If you are only testing, you can use the `devserve.sh` script to serve
+the web interface. You will need to have `http-server` installed - for example,
+via `npm -g install http-server`.
