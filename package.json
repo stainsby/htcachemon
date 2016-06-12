@@ -12,7 +12,7 @@
     "url": "git@github.com:stainsby/htcachemon.git"
   },
   "author": "Sam Stainsby",
-  "license": "TODO",
+  "license": "Apache-2.0",
   "dependencies": {
     "restify": "^4.1.0"
   }
