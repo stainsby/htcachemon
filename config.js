@@ -1,5 +1,5 @@
 module.exports = {
-  cacheDir: '/var/cache/apacheCacheTest',
+  cacheDir: '/var/cache/apache2/mod_disk_cache',
   cmd: {
     htcacheclean: '/usr/bin/htcacheclean'
   },
