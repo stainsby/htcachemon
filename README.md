@@ -14,7 +14,7 @@ left as an exercise for the reader.
 
 ## Installation
 
-### Server
+### API Server
 
 You will need to have node.js and the Apache `htcacheclean` utility 
 installed and, of course, an Apache server and a `mod_cache_disk` cache.
@@ -33,5 +33,6 @@ file. The `serve.sh` script provides an example of this.
 The web interface is just a set of static files to create an AngularJS
 single page application. All dependencies are provided (or come from CDNs).
 
-1. 
+1. Adjust `<repo>/ui/config.js` to suit your system. You will
+   likely need to change the API endpoint.
 2. Configure your web server to serve the files in `<repo>/ui`.
