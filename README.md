@@ -4,6 +4,7 @@ htcachemon is a tool to view statistics about entries in an Apache
 `mod_disk_cache` cache. Users can also manually purge URLs from the cache.
 It uses the Apache `htcacheclean` tool in the back-end to accomplish this.
 
+![screenshot](/screenshots/main_screenshot.png?raw=true "screenshot")
 
 ## Security
 
