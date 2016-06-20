@@ -195,9 +195,10 @@ function startServer() {
     return next();
   });
   server.get('/entries', httpGetEntries);
-  server.del('/entries/:url', function(req, res, next) {
+  server.del('/entries/:urlEncoded', function(req, res, next) {
     res.setHeader("Access-Control-Allow-Methods", "DELETE");
-    const url = decodeURIComponent(req.params.url);
+    const urlEncoded = req.params.urlEncoded;
+    const url =  decodeURIComponent((new Buffer(urlEncoded, 'base64')).toString('utf8'));
     return httpDeleteEntry(url, req, res, next);
   });
   

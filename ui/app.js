@@ -8,6 +8,8 @@
   ngApp.constant('moment', window.moment);
   ngApp.constant('filesize', window.filesize);
   ngApp.constant('db', window.TAFFY());
+  ngApp.constant('btoa', window.btoa);
+  ngApp.constant('encodeURIComponent', window.encodeURIComponent);
 
 
   ngApp.factory('entries', function($log, $resource, config) {
@@ -26,7 +28,9 @@
   });
 
 
-  ngApp.controller('MainController', function($log, $resource, $scope, $rootScope, config, moment, filesize, status, entries, db) {
+  ngApp.controller('MainController', function(
+    $log, $resource, $scope, $rootScope, config, moment, filesize,
+    status, entries, db, btoa, encodeURIComponent) {
 
     $scope.moment = moment;
     $scope.filesize = filesize;
@@ -133,12 +137,15 @@
     function doPurgeUrl(urlEntry) {
       var url = urlEntry.url;
       $log.info('purging URL: \'' + url + '\' ...');
-      entries.delete({url: url}).$promise.then(function() {
+      var urlEncoded = btoa(encodeURIComponent(url));
+      entries.delete({url: urlEncoded}).$promise.then(function() {
         urlEntry.purged = true;
         angular.forEach(urlEntry.stats, function(stat) {
           stat.purged = true;
         });
         $log.info('... purged URL OK:', url);
+      }).catch(function(err) {
+        throw err;
       });
     }
 
