@@ -6,11 +6,23 @@ It uses the Apache `htcacheclean` tool in the back-end to accomplish this.
 
 ![screenshot](/screenshots/main_screenshot.png?raw=true "screenshot")
 
+
 ## Security
 
 Both the server component and the web interface should be secured from
 unauthorised access. Exactly what measures you take to achieve that is
 left as an exercise for the reader.
+
+
+## Things to note
+
+### Expiry times
+
+The expiry time reported by `htcacheclean` appears to be based solely on
+the `Expires` header value of the cache entry, and, for example, ignores any `Cache-Control`
+values that may also be present. This means that entries may be marked "stale" in the UI
+even if Apache will still use the cached entry - say, because of a `Cache-Control` value
+that overrides the `Expires` header.
 
 
 ## Installation
