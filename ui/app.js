@@ -134,7 +134,7 @@
     }
 
 
-    function doPurgeUrl(urlEntry) {
+    function doPurgeUrl(urlEntry, andThen) {
       var url = urlEntry.url;
       $log.info('purging URL: \'' + url + '\' ...');
       var urlEncoded = btoa(encodeURIComponent(url));
@@ -144,11 +144,31 @@
           stat.purged = true;
         });
         $log.info('... purged URL OK:', url);
+        if (andThen) { andThen(); }
       }).catch(function(err) {
-        throw err;
+        if (andThen) { andThen(err); } else { throw err; }
       });
     }
 
+
+    function doPurgeAllMatches() {
+      var entries = $rootScope.search.entries;
+      var n = entries.length;
+      $log.info('purging', n, 'entries');
+      for (var i = 0; i < n; i++) {
+        var urlEntry = entries[i];
+        doPurgeUrl(urlEntry, function(err) {
+          if (err) {
+            $scope.showPurgeAllWarning = false;
+            throw err;
+          }
+          n--;
+          if (n === 0) {
+            $scope.showPurgeAllWarning = false;
+          }
+        });
+      }
+    }
 
     function onPagination() {
       var page = $rootScope.search.page;
@@ -195,6 +215,7 @@
     $scope.doDatabaseRefresh = doDatabaseRefresh;
     $scope.doUrlFilter = doUrlFilter;
     $scope.doPurgeUrl = doPurgeUrl;
+    $scope.doPurgeAllMatches = doPurgeAllMatches;
     $scope.pageForward = pageForward;
     $scope.pageBackward = pageBackward;
     $scope.setEntriesPerPage = setEntriesPerPage;

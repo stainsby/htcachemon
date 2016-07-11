@@ -98,7 +98,20 @@
   </div>
 </div>
 
-<div ng-if="credits" class="row-fluid clearfix">
+<div class="row-fluid clearfix">
+  <div class="col-md-12">
+    <p ng-hide="showPurgeAllWarning" class="pull-right">
+      <a href="" class="btn btn-lg btn-warning" ng-click="showPurgeAllWarning = true"><i class="fa fa-trash"></i>&nbsp;purge all matches</a>
+    </p>
+    <p ng-show="showPurgeAllWarning" class="alert alert-danger pull-right">
+      Really purge {{urlEntries.length}} matches?
+      <a href="" class="btn btn-danger" ng-click="doPurgeAllMatches()"><i class="fa fa-trash"></i>&nbsp;Purge</a>
+      <a href="" class="btn btn-default" ng-click="showPurgeAllWarning = false">Cancel</a>
+    </p>
+  </div>
+</div>
+
+<div ng-if="credits" class="row-fluid clearfix" style="margin-top: 4em;">
   <div class="col-md-12 well">
     <p class="pull-right">
       <large>htcachemon software by <a target="_blank" ng-href="credits.author.url">{{credits.author.name}}</a></large>
